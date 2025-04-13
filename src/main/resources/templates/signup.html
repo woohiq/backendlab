@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <title>Signup</title>
+  <style>
+    * {
+      box-sizing: border-box; /* 핵심! padding 포함 계산 */
+    }
+
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background-color: #f4f4f4;
+    }
+
+    .container {
+      width: 300px;
+      margin: 100px auto;
+      padding: 30px;
+      background: #f8f8f8;
+      border-radius: 10px;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+      text-align: center;
+    }
+
+    .container h2 {
+      margin-bottom: 20px;
+    }
+
+    .input-box {
+      width: 100%;
+      padding: 10px;
+      margin-bottom: 15px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      font-size: 14px;
+    }
+
+    button {
+      width: 100%;
+      padding: 10px;
+      background-color: #4CAF50;
+      color: white;
+      font-size: 16px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
+    .error {
+      color: red;
+      font-weight: bold;
+      margin-bottom: 10px;
+    }
+	.header {
+	  position: absolute;
+	  top: 20px;
+	  left: 20px;
+	}
+
+	.home-button {
+	  display: inline-block;
+	  text-decoration: none;
+	  font-size: 24px;
+	  background-color: #ffffffcc; /* 반투명 흰색 */
+	  padding: 8px 12px;
+	  border-radius: 8px;
+	  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+	  color: #333;
+	  transition: background-color 0.2s;
+	}
+
+	.home-button:hover {
+	  background-color: #e0e0e0;
+	}
+
+  </style>
+</head>
+<body>
+	<div class="header">
+	  <a href="/" class="home-button">🏠</a>
+	</div>
+
+  <div class="container">
+    <h2>회원가입</h2>
+    <form method="post" action="/signup">
+      <div class="error" th:if="${error}" th:text="${error}"></div>
+      <input class="input-box" type="text" name="id" placeholder="ID" required>
+      <input class="input-box" type="password" name="password" placeholder="Password" required>
+      <input class="input-box" type="text" name="name" placeholder="이름" required>
+      <button type="submit">가입하기</button>
+    </form>
+    <br>
+    <form action="/login" method="get">
+      <button type="submit">로그인으로 돌아가기</button>
+    </form>
+  </div>
+</body>
+</html>

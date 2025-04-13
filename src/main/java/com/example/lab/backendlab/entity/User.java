@@ -8,9 +8,9 @@ import jakarta.persistence.Table;
 @Table(name = "user_table")
 public class User {
 
-    @Id
-    private String uuid;  // Primary Key (랜덤 UUID)
+    private String uuid; 
 
+    @Id
     private String id;     // 로그인 ID
     private String name;
     private String password;
