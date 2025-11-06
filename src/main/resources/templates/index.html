@@ -56,6 +56,10 @@
 </head>
 <body>
 
+  <div class="test-box" style="position: absolute; top: 20px; left: 30px; background-color: rgba(255,255,255,0.7); padding: 8px 12px; border-radius: 10px; font-weight: bold; font-size: 18px; box-shadow: 0 2px 4px rgba(0,0,0,0.2); z-index: 10;">
+    <a href="/test" style="text-decoration: none; color: #333;">🧪</a>
+  </div>
+
   <div class="login-box">
     <span th:if="${username != null}" th:text="${username + '님 환영합니다'}"></span>
     <a th:if="${username == null}" href="/login">Login</a>
@@ -64,6 +68,9 @@
 
   <div class="overlay">
     <h1>Welcome!</h1>
+    <a href="/record" style="display: inline-block; margin-top: 20px; padding: 12px 24px; background-color: #4CAF50; color: white; text-decoration: none; border-radius: 8px; font-size: 18px; font-weight: bold; box-shadow: 0 4px 8px rgba(0,0,0,0.2); transition: background-color 0.3s;">
+      🎤 Record Game
+    </a>
   </div>
 </body>
 </html>

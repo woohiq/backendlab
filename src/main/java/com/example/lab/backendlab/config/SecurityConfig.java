@@ -13,12 +13,12 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
     	http
 	        .csrf(csrf -> csrf.disable())
-	        .authorizeHttpRequests(auth -> auth
-	            .requestMatchers(
-	                "/", "/index", "/login", "/signup", "/css/**", "/js/**", "/img/**", "/favicon.ico"
-	            ).permitAll()
-	            .anyRequest().authenticated()
-	        )
+        .authorizeHttpRequests(auth -> auth
+            .requestMatchers(
+                "/test", "/", "/index", "/login", "/signup", "/record", "/css/**", "/js/**", "/img/**", "/favicon.ico"
+            ).permitAll()
+            .anyRequest().authenticated()
+        )
 	        .formLogin(form -> form
 	            .loginPage("/login")
 	            .loginProcessingUrl("/disable-default") // 없는 경로로 설정 (강제 비활성화)
