@@ -56,10 +56,6 @@
 </head>
 <body>
 
-  <div class="test-box" style="position: absolute; top: 20px; left: 30px; background-color: rgba(255,255,255,0.7); padding: 8px 12px; border-radius: 10px; font-weight: bold; font-size: 18px; box-shadow: 0 2px 4px rgba(0,0,0,0.2); z-index: 10;">
-    <a href="/test" style="text-decoration: none; color: #333;">🧪</a>
-  </div>
-
   <div class="login-box">
     <span th:if="${username != null}" th:text="${username + '님 환영합니다'}"></span>
     <a th:if="${username == null}" href="/login">Login</a>
