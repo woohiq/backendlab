@@ -72,7 +72,7 @@
       filter: blur(40px);
       transform: scale(1.1);
       opacity: 0.6;
-      transition: background-image 0.5s ease;
+      transition: background-image 0.3s ease-out;
     }
 
     .main-image {
@@ -82,7 +82,7 @@
       object-fit: contain;
       z-index: 1;
       box-shadow: 0 10px 40px rgba(0, 0, 0, 0.8);
-      transition: opacity 0.5s ease;
+      transition: opacity 0.3s ease-out;
       user-select: none;
       -webkit-user-drag: none;
       pointer-events: none;
@@ -280,6 +280,12 @@
     let hasDragged = false;
     let startX;
     let scrollLeft;
+    
+    // 이미지 프리로딩 캐시
+    const imageCache = {};
+    
+    // 유저 상호작용 상태
+    let userInteractionTimeout = null;
 
     // 초기화
     function init() {
@@ -312,14 +318,45 @@
         thumbnailTrack.appendChild(img);
       });
 
-      // 첫 이미지 표시
-      showImage(0, false);
-      
-      // 자동 재생 시작
-      startAutoPlay();
+      // 첫 번째 이미지와 인접 이미지들 프리로딩
+      preloadImage(images[0]).then(() => {
+        // 첫 이미지 표시
+        showImage(0, false);
+        
+        // 자동 재생 시작
+        startAutoPlay();
+      });
       
       // 드래그 스크롤 이벤트 설정
       setupDragScroll();
+    }
+
+    // 이미지 프리로딩
+    function preloadImage(src) {
+      if (imageCache[src]) {
+        return Promise.resolve(imageCache[src]);
+      }
+      
+      return new Promise((resolve, reject) => {
+        const img = new Image();
+        img.onload = () => {
+          imageCache[src] = img;
+          resolve(img);
+        };
+        img.onerror = reject;
+        img.src = src;
+      });
+    }
+    
+    // 다음/이전 이미지 미리 로딩
+    function preloadAdjacentImages(index) {
+      // 다음 이미지 프리로딩
+      const nextIndex = (index + 1) % images.length;
+      preloadImage(images[nextIndex]);
+      
+      // 이전 이미지 프리로딩
+      const prevIndex = (index - 1 + images.length) % images.length;
+      preloadImage(images[prevIndex]);
     }
 
     // 이미지 표시
@@ -327,13 +364,31 @@
       currentIndex = index;
       const imageSrc = images[index];
       
-      // 메인 이미지 업데이트
-      mainImage.style.opacity = '0';
-      setTimeout(() => {
+      // 이미지 프리로딩 (먼저 로딩 완료 확인)
+      preloadImage(imageSrc).then(() => {
+        // 메인 이미지 페이드 아웃
+        mainImage.style.opacity = '0';
+        
+        // 짧은 딜레이 후 이미지 교체 (부드러운 페이드)
+        setTimeout(() => {
+          mainImage.src = imageSrc;
+          backgroundBlur.style.backgroundImage = `url(${imageSrc})`;
+          
+          // 이미지 로드 확인 후 페이드 인
+          requestAnimationFrame(() => {
+            mainImage.style.opacity = '1';
+          });
+          
+          // 다음/이전 이미지 미리 로딩
+          preloadAdjacentImages(index);
+        }, 150);
+      }).catch(err => {
+        console.error('Failed to load image:', err);
+        // 로딩 실패해도 표시 시도
         mainImage.src = imageSrc;
         backgroundBlur.style.backgroundImage = `url(${imageSrc})`;
         mainImage.style.opacity = '1';
-      }, 250);
+      });
 
       // 썸네일 활성화 상태 업데이트
       document.querySelectorAll('.thumbnail').forEach((thumb, i) => {
@@ -347,18 +402,15 @@
       if (shouldScroll) {
         scrollToActiveThumbnail();
       }
-
-      // 자동 재생 리셋
-      resetAutoPlay();
     }
 
-    // 다음 이미지
+    // 다음 이미지 (자동 재생용)
     function nextImage() {
       const nextIndex = (currentIndex + 1) % images.length;
       showImage(nextIndex, true);
     }
 
-    // 이전 이미지
+    // 이전 이미지 (수동 조작용)
     function prevImage() {
       const prevIndex = (currentIndex - 1 + images.length) % images.length;
       showImage(prevIndex, true);
@@ -391,13 +443,23 @@
 
     // 자동 재생 시작
     function startAutoPlay() {
+      clearInterval(autoPlayInterval);
       autoPlayInterval = setInterval(nextImage, 5000);
     }
 
-    // 자동 재생 리셋
+    // 자동 재생 리셋 (유저 상호작용 시)
     function resetAutoPlay() {
+      // 기존 타이머 취소
       clearInterval(autoPlayInterval);
-      startAutoPlay();
+      if (userInteractionTimeout) {
+        clearTimeout(userInteractionTimeout);
+      }
+      
+      // 3초 후 자동 재생 재개
+      userInteractionTimeout = setTimeout(() => {
+        startAutoPlay();
+        userInteractionTimeout = null;
+      }, 3000);
     }
 
     // 드래그 스크롤 설정
@@ -417,24 +479,22 @@
         e.preventDefault();
       });
 
-      document.addEventListener('mouseup', () => {
-        if (isMouseDown) {
-          isMouseDown = false;
-          thumbnailContainer.style.cursor = 'grab';
-          
-          // 드래그 상태 리셋 (클릭 이벤트 후)
-          setTimeout(() => {
-            isDragging = false;
-            hasDragged = false;
-          }, 50);
-        }
-      });
-
       thumbnailContainer.addEventListener('mouseleave', () => {
         if (isMouseDown) {
           isMouseDown = false;
           thumbnailContainer.style.cursor = 'grab';
         }
+      });
+
+      thumbnailContainer.addEventListener('mouseup', () => {
+        isMouseDown = false;
+        thumbnailContainer.style.cursor = 'grab';
+        
+        // 드래그 상태 리셋 (클릭 이벤트 후)
+        setTimeout(() => {
+          isDragging = false;
+          hasDragged = false;
+        }, 50);
       });
 
       thumbnailContainer.addEventListener('mousemove', (e) => {
@@ -458,8 +518,19 @@
 
     // 키보드 네비게이션
     document.addEventListener('keydown', (e) => {
-      if (e.key === 'ArrowRight') nextImage();
-      if (e.key === 'ArrowLeft') prevImage();
+      if (e.key === 'ArrowRight') {
+        nextImage();
+        resetAutoPlay();
+      }
+      if (e.key === 'ArrowLeft') {
+        prevImage();
+        resetAutoPlay();
+      }
+    });
+
+    // 전역 클릭 이벤트 - 페이지 어디든 클릭하면 자동 재생 리셋
+    document.addEventListener('click', (e) => {
+      resetAutoPlay();
     });
 
     // 초기화 실행
