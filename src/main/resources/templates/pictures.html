@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pictures Gallery</title>
+  <link rel="icon" type="image/x-icon" href="/favicon.ico" />
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      width: 100vw;
+      height: 100vh;
+      overflow: hidden;
+      font-family: 'Segoe UI', sans-serif;
+      display: flex;
+      flex-direction: column;
+      background: #000;
+    }
+
+    /* 상단 네비게이션 */
+    .nav-bar {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      padding: 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: linear-gradient(to bottom, rgba(0,0,0,0.6), transparent);
+      z-index: 10;
+    }
+
+    .back-btn {
+      padding: 10px 20px;
+      background-color: rgba(255, 255, 255, 0.2);
+      color: white;
+      text-decoration: none;
+      border-radius: 8px;
+      font-weight: bold;
+      backdrop-filter: blur(10px);
+      transition: background-color 0.3s;
+    }
+
+    .back-btn:hover {
+      background-color: rgba(255, 255, 255, 0.3);
+    }
+
+    /* 메인 이미지 영역 */
+    .main-container {
+      flex: 1;
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .background-blur {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-size: cover;
+      background-position: center;
+      filter: blur(40px);
+      transform: scale(1.1);
+      opacity: 0.6;
+      transition: background-image 0.5s ease;
+    }
+
+    .main-image {
+      position: relative;
+      max-width: 90%;
+      max-height: 90%;
+      object-fit: contain;
+      z-index: 1;
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.8);
+      transition: opacity 0.5s ease;
+      user-select: none;
+      -webkit-user-drag: none;
+      pointer-events: none;
+    }
+
+    /* Footer - 미리보기 영역 */
+    .footer {
+      height: 150px;
+      background: rgba(20, 20, 20, 0.95);
+      backdrop-filter: blur(10px);
+      display: flex;
+      align-items: center;
+      padding: 0 20px;
+      position: relative;
+      border-top: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .thumbnail-container {
+      flex: 1;
+      overflow-x: auto;
+      overflow-y: hidden;
+      position: relative;
+      margin: 0 10px;
+      cursor: grab;
+      scrollbar-width: none; /* Firefox */
+      -ms-overflow-style: none; /* IE and Edge */
+    }
+
+    .thumbnail-container::-webkit-scrollbar {
+      display: none; /* Chrome, Safari, Opera */
+    }
+
+    .thumbnail-container.grabbing {
+      cursor: grabbing;
+    }
+
+    .thumbnail-track {
+      display: flex;
+      gap: 15px;
+      padding: 10px 0;
+    }
+
+    .thumbnail {
+      min-width: 120px;
+      height: 120px;
+      cursor: pointer;
+      border-radius: 8px;
+      object-fit: cover;
+      border: 3px solid transparent;
+      transition: all 0.3s ease;
+      opacity: 0.6;
+      user-select: none;
+      -webkit-user-drag: none;
+      pointer-events: auto;
+    }
+
+    .thumbnail:hover {
+      opacity: 1;
+      transform: scale(1.05);
+    }
+
+    .thumbnail.active {
+      border-color: #2196F3;
+      opacity: 1;
+      box-shadow: 0 0 20px rgba(33, 150, 243, 0.5);
+    }
+
+    .nav-button {
+      width: 50px;
+      height: 50px;
+      background: rgba(255, 255, 255, 0.1);
+      border: none;
+      border-radius: 50%;
+      color: white;
+      font-size: 24px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      backdrop-filter: blur(10px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .nav-button:hover {
+      background: rgba(255, 255, 255, 0.2);
+      transform: scale(1.1);
+    }
+
+    .nav-button:disabled {
+      opacity: 0.3;
+      cursor: not-allowed;
+    }
+
+    /* 이미지 카운터 */
+    .image-counter {
+      position: absolute;
+      bottom: 170px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(0, 0, 0, 0.7);
+      color: white;
+      padding: 10px 20px;
+      border-radius: 20px;
+      font-size: 14px;
+      backdrop-filter: blur(10px);
+      z-index: 10;
+    }
+  </style>
+</head>
+<body>
+  <div class="nav-bar">
+    <a href="/" class="back-btn">← Back to Home</a>
+    <div class="image-counter">
+      <span id="currentIndex">1</span> / <span id="totalImages">0</span>
+    </div>
+  </div>
+
+  <div class="main-container">
+    <div class="background-blur" id="backgroundBlur"></div>
+    <img id="mainImage" class="main-image" alt="Gallery Image" draggable="false">
+  </div>
+
+  <div class="footer">
+    <button class="nav-button" id="prevBtn" onclick="scrollThumbnails('left')">‹</button>
+    <div class="thumbnail-container">
+      <div class="thumbnail-track" id="thumbnailTrack"></div>
+    </div>
+    <button class="nav-button" id="nextBtn" onclick="scrollThumbnails('right')">›</button>
+  </div>
+
+  <script>
+    // 이미지 목록 (webp 파일들)
+    const images = [
+      '/img/APC_0005.webp',
+      '/img/IMG_0106.webp',
+      '/img/IMG_0157.webp',
+      '/img/IMG_0200.webp',
+      '/img/IMG_0260.webp',
+      '/img/IMG_0882.webp',
+      '/img/IMG_0996.webp',
+      '/img/IMG_1006.webp',
+      '/img/IMG_1014.webp',
+      '/img/IMG_1016.webp',
+      '/img/IMG_1233.webp',
+      '/img/IMG_1238.webp',
+      '/img/IMG_1475.webp',
+      '/img/IMG_2447.webp',
+      '/img/IMG_2931.webp',
+      '/img/IMG_3185.webp',
+      '/img/IMG_3319.webp',
+      '/img/IMG_3412.webp',
+      '/img/IMG_3648.webp',
+      '/img/IMG_4032.webp',
+      '/img/IMG_4043.webp',
+      '/img/IMG_4053.webp',
+      '/img/IMG_4299.webp',
+      '/img/IMG_4371.webp',
+      '/img/IMG_4561.webp',
+      '/img/IMG_4572.webp',
+      '/img/IMG_5049.webp',
+      '/img/IMG_5255.webp',
+      '/img/IMG_5256.webp',
+      '/img/IMG_5291.webp',
+      '/img/IMG_5293.webp',
+      '/img/IMG_5321.webp',
+      '/img/IMG_5323.webp',
+      '/img/IMG_5324.webp',
+      '/img/IMG_5363.webp',
+      '/img/IMG_5435.webp',
+      '/img/IMG_5446.webp',
+      '/img/IMG_5451.webp',
+      '/img/IMG_5643.webp',
+      '/img/IMG_5650.webp',
+      '/img/IMG_5795.webp',
+      '/img/IMG_5805.webp',
+      '/img/IMG_5819.webp',
+      '/img/IMG_6996.webp',
+      '/img/IMG_7278.webp',
+      '/img/KakaoTalk_Moim_7hIaamy6TxqaAgS9pmPPUHDznsjRyq.webp',
+      '/img/KakaoTalk_Moim_7hIaamy6TxqazLhnTIfBD8KrJXArnz.webp',
+      '/img/KakaoTalk_Moim_7hIaamy6TxqazLhnTIfBD8KrJXCmJj.webp'
+    ];
+
+    let currentIndex = 0;
+    let autoPlayInterval;
+    const mainImage = document.getElementById('mainImage');
+    const backgroundBlur = document.getElementById('backgroundBlur');
+    const thumbnailTrack = document.getElementById('thumbnailTrack');
+    const thumbnailContainer = document.querySelector('.thumbnail-container');
+    const currentIndexSpan = document.getElementById('currentIndex');
+    const totalImagesSpan = document.getElementById('totalImages');
+    
+    // 드래그 스크롤 변수
+    let isDragging = false;
+    let hasDragged = false;
+    let startX;
+    let scrollLeft;
+
+    // 초기화
+    function init() {
+      totalImagesSpan.textContent = images.length;
+      
+      // 썸네일 생성
+      images.forEach((src, index) => {
+        const img = document.createElement('img');
+        // 썸네일용 저용량 이미지 사용
+        const thumbnailSrc = src.replace('/img/', '/img/thumbnails/').replace('.webp', '_thumb.webp');
+        img.src = thumbnailSrc;
+        img.className = 'thumbnail';
+        img.dataset.fullImage = src; // 원본 이미지 경로 저장
+        img.draggable = false; // 이미지 드래그 방지
+        if (index === 0) img.classList.add('active');
+        
+        // 이미지 드래그 시작 방지
+        img.addEventListener('dragstart', (e) => {
+          e.preventDefault();
+          return false;
+        });
+        
+        // 클릭 이벤트 (드래그와 구분)
+        img.addEventListener('click', (e) => {
+          if (!hasDragged) {
+            showImage(index);
+          }
+        });
+        
+        thumbnailTrack.appendChild(img);
+      });
+
+      // 첫 이미지 표시
+      showImage(0, false);
+      
+      // 자동 재생 시작
+      startAutoPlay();
+      
+      // 드래그 스크롤 이벤트 설정
+      setupDragScroll();
+    }
+
+    // 이미지 표시
+    function showImage(index, shouldScroll = true) {
+      currentIndex = index;
+      const imageSrc = images[index];
+      
+      // 메인 이미지 업데이트
+      mainImage.style.opacity = '0';
+      setTimeout(() => {
+        mainImage.src = imageSrc;
+        backgroundBlur.style.backgroundImage = `url(${imageSrc})`;
+        mainImage.style.opacity = '1';
+      }, 250);
+
+      // 썸네일 활성화 상태 업데이트
+      document.querySelectorAll('.thumbnail').forEach((thumb, i) => {
+        thumb.classList.toggle('active', i === index);
+      });
+
+      // 카운터 업데이트
+      currentIndexSpan.textContent = index + 1;
+
+      // 활성 썸네일로 스크롤 (클릭 시)
+      if (shouldScroll) {
+        scrollToActiveThumbnail();
+      }
+
+      // 자동 재생 리셋
+      resetAutoPlay();
+    }
+
+    // 다음 이미지
+    function nextImage() {
+      const nextIndex = (currentIndex + 1) % images.length;
+      showImage(nextIndex, true);
+    }
+
+    // 이전 이미지
+    function prevImage() {
+      const prevIndex = (currentIndex - 1 + images.length) % images.length;
+      showImage(prevIndex, true);
+    }
+
+    // 썸네일 스크롤 (1칸씩)
+    function scrollThumbnails(direction) {
+      const thumbnailWidth = 120; // 썸네일 너비
+      const gap = 15; // gap
+      const scrollAmount = thumbnailWidth + gap; // 135px
+      
+      if (direction === 'left') {
+        thumbnailContainer.scrollBy({ left: -scrollAmount, behavior: 'smooth' });
+      } else {
+        thumbnailContainer.scrollBy({ left: scrollAmount, behavior: 'smooth' });
+      }
+    }
+
+    // 활성 썸네일로 스크롤
+    function scrollToActiveThumbnail() {
+      const activeThumbnail = document.querySelector('.thumbnail.active');
+      if (activeThumbnail) {
+        activeThumbnail.scrollIntoView({
+          behavior: 'smooth',
+          block: 'nearest',
+          inline: 'center'
+        });
+      }
+    }
+
+    // 자동 재생 시작
+    function startAutoPlay() {
+      autoPlayInterval = setInterval(nextImage, 5000);
+    }
+
+    // 자동 재생 리셋
+    function resetAutoPlay() {
+      clearInterval(autoPlayInterval);
+      startAutoPlay();
+    }
+
+    // 드래그 스크롤 설정
+    function setupDragScroll() {
+      let isMouseDown = false;
+      let startScrollLeft = 0;
+      
+      thumbnailContainer.addEventListener('mousedown', (e) => {
+        isMouseDown = true;
+        isDragging = false;
+        hasDragged = false;
+        
+        thumbnailContainer.style.cursor = 'grabbing';
+        startX = e.pageX;
+        startScrollLeft = thumbnailContainer.scrollLeft;
+        
+        e.preventDefault();
+      });
+
+      document.addEventListener('mouseup', () => {
+        if (isMouseDown) {
+          isMouseDown = false;
+          thumbnailContainer.style.cursor = 'grab';
+          
+          // 드래그 상태 리셋 (클릭 이벤트 후)
+          setTimeout(() => {
+            isDragging = false;
+            hasDragged = false;
+          }, 50);
+        }
+      });
+
+      thumbnailContainer.addEventListener('mouseleave', () => {
+        if (isMouseDown) {
+          isMouseDown = false;
+          thumbnailContainer.style.cursor = 'grab';
+        }
+      });
+
+      thumbnailContainer.addEventListener('mousemove', (e) => {
+        if (!isMouseDown) return;
+        
+        e.preventDefault();
+        
+        // 조금이라도 움직이면 드래그로 간주
+        const moveThreshold = 3; // px
+        const distance = e.pageX - startX;
+        
+        if (Math.abs(distance) > moveThreshold) {
+          isDragging = true;
+          hasDragged = true;
+        }
+        
+        // 스크롤 이동
+        thumbnailContainer.scrollLeft = startScrollLeft - distance;
+      });
+    }
+
+    // 키보드 네비게이션
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'ArrowRight') nextImage();
+      if (e.key === 'ArrowLeft') prevImage();
+    });
+
+    // 초기화 실행
+    init();
+  </script>
+</body>
+</html>
+
