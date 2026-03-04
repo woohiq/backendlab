@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>handudle</title>
+  <link rel="icon" type="image/x-icon" href="/favicon.ico" />
+
+  <style>
+    html, body {
+      height: 100%;
+      margin: 0;
+      padding: 0;
+      font-family: 'Segoe UI', sans-serif;
+      background: #111;
+    }
+
+    header {
+      height: 56px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 16px;
+      background: rgba(255,255,255,0.92);
+      box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+
+    header a {
+      text-decoration: none;
+      color: #111;
+      font-weight: 700;
+    }
+
+    .right {
+      display: flex;
+      gap: 14px;
+      align-items: center;
+    }
+
+    .note {
+      font-size: 12px;
+      color: #444;
+      white-space: nowrap;
+    }
+
+    .frame-wrap {
+      height: calc(100vh - 56px);
+      width: 100%;
+    }
+
+    iframe {
+      width: 100%;
+      height: 100%;
+      border: 0;
+      background: #fff;
+    }
+  </style>
+</head>
+
+<body>
+  <header>
+    <a href="/index">← Back</a>
+
+    <div class="right">
+      <a href="https://handle.wolim.net/" target="_blank" rel="noopener noreferrer">
+        새 창으로 열기
+      </a>
+      <span class="note">원본: wolimst/handle (AGPL-3.0)</span>
+    </div>
+  </header>
+
+  <div class="frame-wrap">
+    <iframe
+      src="https://handle.wolim.net/"
+      title="Handudle (Handle)"
+      loading="lazy">
+    </iframe>
+  </div>
+</body>
+</html>

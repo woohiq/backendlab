@@ -4,6 +4,7 @@
   <meta charset="UTF-8" />
   <title>Welcome</title>
   <link rel="icon" type="image/x-icon" href="/favicon.ico" />
+
   <style>
     body {
       margin: 0;
@@ -54,8 +55,8 @@
     }
   </style>
 </head>
-<body>
 
+<body>
   <div class="login-box">
     <span th:if="${username != null}" th:text="${username + '님 환영합니다'}"></span>
     <a th:if="${username == null}" href="/login">Login</a>
@@ -64,12 +65,22 @@
 
   <div class="overlay">
     <h1>Welcome!</h1>
+
     <div style="display: flex; flex-direction: column; gap: 15px; margin-top: 20px;">
-      <a href="/record" style="display: inline-block; padding: 12px 24px; background-color: #4CAF50; color: white; text-decoration: none; border-radius: 8px; font-size: 18px; font-weight: bold; box-shadow: 0 4px 8px rgba(0,0,0,0.2); transition: background-color 0.3s;">
-        🎤 Record Game
+      <a href="/record"
+         style="display: inline-block; padding: 12px 24px; background-color: #4CAF50; color: white; text-decoration: none; border-radius: 8px; font-size: 18px; font-weight: bold; box-shadow: 0 4px 8px rgba(0,0,0,0.2); transition: background-color 0.3s;">
+        Record Game
       </a>
-      <a href="/pictures" style="display: inline-block; padding: 12px 24px; background-color: #2196F3; color: white; text-decoration: none; border-radius: 8px; font-size: 18px; font-weight: bold; box-shadow: 0 4px 8px rgba(0,0,0,0.2); transition: background-color 0.3s;">
-        📷 Pictures
+
+      <a href="/pictures"
+         style="display: inline-block; padding: 12px 24px; background-color: #2196F3; color: white; text-decoration: none; border-radius: 8px; font-size: 18px; font-weight: bold; box-shadow: 0 4px 8px rgba(0,0,0,0.2); transition: background-color 0.3s;">
+        Pictures
+      </a>
+
+
+      <a href="/handudle"
+         style="display: inline-block; padding: 12px 24px; background-color: #FF9800; color: white; text-decoration: none; border-radius: 8px; font-size: 18px; font-weight: bold; box-shadow: 0 4px 8px rgba(0,0,0,0.2); transition: background-color 0.3s;">
+        handudle
       </a>
     </div>
   </div>
